@@ -19,7 +19,7 @@ fun String.run(workingDir: File): String {
             .redirectError(ProcessBuilder.Redirect.INHERIT)
             .start()
 
-        proc.waitFor(15, TimeUnit.SECONDS)
+        proc.waitFor(5, TimeUnit.MINUTES)
         proc.inputStream.bufferedReader().readText()
     }
     catch(e: IOException) {
@@ -42,7 +42,6 @@ fun getCurlCommand(url: String): String {
     // -s - no progress meter
     // -A - set user agent
     val logFileName = Paths.get("..", "archive", "${url.withoutProtocolAndWww()}.txt").toString()
-    println(logFileName)
     return "curl -w \"$timingTemplate\" -o $logFileName -s -A \"$userAgent\" $url"
 }
 
@@ -114,6 +113,7 @@ val sitesTested = arrayOf(
 )
 
 sitesTested.forEach { url ->
+    println(url)
     val now: Instant = Instant.now()
 
     println(getCurlCommand(url))
@@ -123,6 +123,7 @@ sitesTested.forEach { url ->
     getCurlDataFile(url).appendText(curlResultsToDataLine(curlResults, now))
 
     val lcpResults = getLcpCommand(url).run(here)
+    println(lcpResults.take(500))
 
     val lcpDataLine = lcpResultsToDataLine(lcpResults, now)
     if(lcpDataLine != null) {
