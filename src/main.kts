@@ -3,7 +3,6 @@
 import java.io.File
 import java.io.IOException
 import java.net.URLEncoder
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -43,6 +42,7 @@ fun getCurlCommand(url: String): String {
     // -s - no progress meter
     // -A - set user agent
     val logFileName = Paths.get("..", "archive", "${url.withoutProtocolAndWww()}.txt").toString()
+    println(logFileName)
     return "curl -w \"$timingTemplate\" -o $logFileName -s -A \"$userAgent\" $url"
 }
 
@@ -116,8 +116,9 @@ val sitesTested = arrayOf(
 sitesTested.forEach { url ->
     val now: Instant = Instant.now()
 
+    println(getCurlCommand(url))
     val curlResults = getCurlCommand(url).run(here)
-    println(curlResults)
+    println(curlResults + "\n")
 
     getCurlDataFile(url).appendText(curlResultsToDataLine(curlResults, now))
 
