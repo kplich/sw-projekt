@@ -4,6 +4,7 @@ import java.io.File
 import java.io.IOException
 import java.net.URLEncoder
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
@@ -41,7 +42,7 @@ fun getCurlCommand(url: String): String {
     // -o - output location
     // -s - no progress meter
     // -A - set user agent
-    val logFileName = Path.of("..", "archive", "${url.withoutProtocolAndWww()}.txt").toString()
+    val logFileName = Paths.get("..", "archive", "${url.withoutProtocolAndWww()}.txt").toString()
     return "curl -w \"$timingTemplate\" -o $logFileName -s -A \"$userAgent\" $url"
 }
 
@@ -71,7 +72,7 @@ fun getCurlDataFile(url: String): File {
     val curlDataHeader = "timestamp,name_lookup_time,connection_time,handshake_time,sever_processing_time,content_transfer_time"
     val strippedSiteUrl = url.withoutProtocolAndWww()
 
-    val dataFile: File = Path.of("..", "curl-data", "$strippedSiteUrl.csv").toFile()
+    val dataFile: File = Paths.get("..", "curl-data", "$strippedSiteUrl.csv").toFile()
     if (!dataFile.exists()) {
         dataFile.writeText(curlDataHeader + "\n")
     }
@@ -93,7 +94,7 @@ fun lcpResultsToDataLine(results: String, now: Instant): String? {
 fun getLcpDataFile(url: String): File {
     val lcpDataHeader = "timestamp,lcp_time"
     val strippedSiteUrl = url.withoutProtocolAndWww()
-    val dataFile: File = Path.of("..", "lcp-data", "$strippedSiteUrl.csv").toFile()
+    val dataFile: File = Paths.get("..", "lcp-data", "$strippedSiteUrl.csv").toFile()
 
     if (!dataFile.exists()) {
         dataFile.writeText(lcpDataHeader + "\n")
