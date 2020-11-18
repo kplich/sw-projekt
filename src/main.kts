@@ -73,7 +73,7 @@ fun getCurlDataFile(url: String): File {
     val curlDataHeader = "timestamp,name_lookup_time,connection_time,handshake_time,sever_processing_time,content_transfer_time"
     val strippedSiteUrl = url.withoutProtocolAndWww()
 
-    val dataFile: File = Paths.get("..", "curl-data", "$strippedSiteUrl.csv").toFile()
+    val dataFile: File = Paths.get("curl-data", "$strippedSiteUrl.csv").toFile()
     if (!dataFile.exists()) {
         dataFile.writeText(curlDataHeader + "\n")
     }
@@ -95,7 +95,7 @@ fun lcpResultsToDataLine(results: String, now: Instant): String? {
 fun getLcpDataFile(url: String): File {
     val lcpDataHeader = "timestamp,lcp_time"
     val strippedSiteUrl = url.withoutProtocolAndWww()
-    val dataFile: File = Paths.get("..", "lcp-data", "$strippedSiteUrl.csv").toFile()
+    val dataFile: File = Paths.get("lcp-data", "$strippedSiteUrl.csv").toFile()
 
     if (!dataFile.exists()) {
         dataFile.writeText(lcpDataHeader + "\n")
@@ -104,7 +104,7 @@ fun getLcpDataFile(url: String): File {
     return dataFile
 }
 
-val here = File(".")
+val here = Paths.get("~", "sw-projekt").toFile()
 println(here.absolutePath)
 val sitesTested = arrayOf(
         "https://allegro.pl",
