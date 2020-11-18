@@ -105,6 +105,7 @@ fun getLcpDataFile(url: String): File {
 }
 
 val here = File(".")
+println(here.absolutePath)
 val sitesTested = arrayOf(
         "https://allegro.pl",
         "https://www.x-kom.pl",
