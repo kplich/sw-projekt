@@ -10,14 +10,15 @@ import java.nio.file.Paths
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
+val projectPath = Paths.get(System.getenv("PROJECT_PATH")).toFile()
 val googleApiKey: String = System.getenv("GOOGLE_API_KEY")
 val lcpRegex = Regex("\"LARGEST_CONTENTFUL_PAINT_MS\": \\{\\s+\"percentile\": (\\d+),")
 
-fun String.run(workingDir: File): String {
+fun String.run(): String {
     return try {
         val parts = this.split("\\s".toRegex())
         val proc = ProcessBuilder(*parts.toTypedArray())
-            .directory(workingDir)
+            .directory(projectPath)
             .redirectOutput(ProcessBuilder.Redirect.PIPE)
             .redirectError(ProcessBuilder.Redirect.PIPE)
             .start()
@@ -43,7 +44,11 @@ fun getCurlCommand(url: String): String {
     // -o - output location
     // -s - no progress meter
     // -A - set user agent
-    val logFileName = Paths.get("..","archive", "${url.withoutProtocolAndWww()}.txt").toString()
+    val logFileName = projectPath
+            .toPath()
+            .resolve("archive")
+            .resolve("${url.withoutProtocolAndWww()}.txt")
+            .toString()
     return "curl -w $timingTemplate -o $logFileName -A $userAgent -s $url"
 }
 
@@ -73,7 +78,12 @@ fun getCurlDataFile(url: String): File {
     val curlDataHeader = "timestamp,name_lookup_time,connection_time,handshake_time,sever_processing_time,content_transfer_time"
     val strippedSiteUrl = url.withoutProtocolAndWww()
 
-    val dataFile: File = Paths.get("curl-data", "$strippedSiteUrl.csv").toFile()
+    val dataFile: File = projectPath
+            .toPath()
+            .resolve("curl-data")
+            .resolve("$strippedSiteUrl.csv")
+            .toFile()
+
     if (!dataFile.exists()) {
         dataFile.writeText(curlDataHeader + "\n")
     }
@@ -95,7 +105,12 @@ fun lcpResultsToDataLine(results: String, now: Instant): String? {
 fun getLcpDataFile(url: String): File {
     val lcpDataHeader = "timestamp,lcp_time"
     val strippedSiteUrl = url.withoutProtocolAndWww()
-    val dataFile: File = Paths.get("lcp-data", "$strippedSiteUrl.csv").toFile()
+
+    val dataFile: File = projectPath
+            .toPath()
+            .resolve("lcp-data")
+            .resolve("$strippedSiteUrl.csv")
+            .toFile()
 
     if (!dataFile.exists()) {
         dataFile.writeText(lcpDataHeader + "\n")
@@ -104,8 +119,8 @@ fun getLcpDataFile(url: String): File {
     return dataFile
 }
 
-val here = Paths.get("~", "sw-projekt").toFile()
-println(here.absolutePath)
+
+println(projectPath.absolutePath)
 val sitesTested = arrayOf(
         "https://allegro.pl",
         "https://www.x-kom.pl",
@@ -120,14 +135,14 @@ sitesTested.forEach { url ->
     val now: Instant = Instant.now()
 
     println(getCurlCommand(url))
-    val curlResults = getCurlCommand(url).run(here)
+    val curlResults = getCurlCommand(url).run()
     println(curlResults + "\n")
 
     val curlDataLine = curlResultsToDataLine(curlResults, now)
     getCurlDataFile(url).appendText(curlDataLine)
 
     // Google's PageSpeed results are cached and shouldn't really change
-    val lcpResults = getLcpCommand(url).run(here)
+    val lcpResults = getLcpCommand(url).run()
     println(lcpResults.take(500))
 
     val lcpDataLine = lcpResultsToDataLine(lcpResults, now)
