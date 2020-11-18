@@ -37,14 +37,14 @@ fun String.withoutProtocolAndWww(): String {
 }
 
 fun getCurlCommand(url: String): String {
-    val timingTemplateFileName = "timing_template.txt"
+    val timingTemplate = "%{time_namelookup};%{time_connect};%{time_pretransfer};%{time_starttransfer};%{time_total}"
     val userAgent = "Mozilla/5.0(X11;Linuxx86_64;rv:77.0)Gecko/20100101Firefox/77.0"
     // -w - write-out format
     // -o - output location
     // -s - no progress meter
     // -A - set user agent
     val logFileName = Paths.get("..","archive", "${url.withoutProtocolAndWww()}.txt").toString()
-    return "curl -w @$timingTemplateFileName -o $logFileName -A $userAgent -s $url"
+    return "curl -w $timingTemplate -o $logFileName -A $userAgent -s $url"
 }
 
 fun getLcpCommand(url: String): String {

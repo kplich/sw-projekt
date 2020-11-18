@@ -1,1 +1,0 @@
-%{time_namelookup};%{time_connect};%{time_pretransfer};%{time_starttransfer};%{time_total}
