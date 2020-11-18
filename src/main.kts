@@ -1,7 +1,10 @@
 #!/usr/bin/env kotlin
 
+import java.io.InputStreamReader
+import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
+import java.lang.StringBuilder
 import java.net.URLEncoder
 import java.nio.file.Paths
 import java.time.Instant
@@ -16,13 +19,13 @@ fun String.run(workingDir: File): String {
         val proc = ProcessBuilder(*parts.toTypedArray())
             .directory(workingDir)
             .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.INHERIT)
+            .redirectError(ProcessBuilder.Redirect.PIPE)
             .start()
 
-        proc.waitFor(5, TimeUnit.MINUTES)
+        proc.waitFor(15, TimeUnit.SECONDS)
         proc.inputStream.bufferedReader().readText()
     }
-    catch(e: IOException) {
+    catch (e: IOException) {
         e.printStackTrace()
         ""
     }
@@ -30,19 +33,18 @@ fun String.run(workingDir: File): String {
 
 fun String.withoutProtocolAndWww(): String {
     return this.removePrefix("https://")
-        .removePrefix("http://")
         .removePrefix("www.")
 }
 
 fun getCurlCommand(url: String): String {
-    val timingTemplate = "%{time_namelookup};%{time_connect};%{time_pretransfer};%{time_starttransfer};%{time_total}"
-    val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0"
+    val timingTemplateFileName = "timing_template.txt"
+    val userAgent = "Mozilla/5.0(X11;Linuxx86_64;rv:77.0)Gecko/20100101Firefox/77.0"
     // -w - write-out format
     // -o - output location
     // -s - no progress meter
     // -A - set user agent
-    val logFileName = Paths.get("..", "archive", "${url.withoutProtocolAndWww()}.txt").toString()
-    return "curl -w \"$timingTemplate\" -o $logFileName -s -A \"$userAgent\" $url"
+    val logFileName = Paths.get("..","archive", "${url.withoutProtocolAndWww()}.txt").toString()
+    return "curl -w @$timingTemplateFileName -o $logFileName -A $userAgent -s $url"
 }
 
 fun getLcpCommand(url: String): String {
@@ -104,12 +106,12 @@ fun getLcpDataFile(url: String): File {
 
 val here = File(".")
 val sitesTested = arrayOf(
-    "https://allegro.pl",
-    "https://www.x-kom.pl",
-    "https://www.morele.net",
-    "https://www.komputronik.pl",
-    "https://www.aliexpress.com",
-    "https://www.amazon.cn"
+        "https://allegro.pl",
+        "https://www.x-kom.pl",
+        "https://www.morele.net",
+        "https://www.komputronik.pl",
+        "https://www.aliexpress.com",
+        "https://www.amazon.cn"
 )
 
 sitesTested.forEach { url ->
@@ -120,8 +122,10 @@ sitesTested.forEach { url ->
     val curlResults = getCurlCommand(url).run(here)
     println(curlResults + "\n")
 
-    getCurlDataFile(url).appendText(curlResultsToDataLine(curlResults, now))
+    val curlDataLine = curlResultsToDataLine(curlResults, now)
+    getCurlDataFile(url).appendText(curlDataLine)
 
+    // Google's PageSpeed results are cached and shouldn't really change
     val lcpResults = getLcpCommand(url).run(here)
     println(lcpResults.take(500))
 
