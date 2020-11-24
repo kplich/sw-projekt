@@ -109,7 +109,9 @@ val sitesTested = arrayOf(
     "https://www.morele.net",
     "https://www.komputronik.pl",
     "https://www.aliexpress.com",
-    "https://www.amazon.cn"
+    "https://www.amazon.cn",
+    "https://mediamarkt.pl",
+    "https://www.euro.com.pl"
 )
 
 sitesTested.forEach { url ->
